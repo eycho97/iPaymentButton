@@ -26,7 +26,7 @@ public extension iPaymentButton {
             VStack {
                 CardsApp()
                 iPaymentButton(type: .donate, style: .whiteOutline, action: {
-                    applePayDemo()
+                    applePayDemo(price: 50.0, label: "Seller")
                 })
             }
         }
@@ -38,7 +38,7 @@ public extension iPaymentButton {
             VStack {
                 ShoppingApp()
                 iPaymentButton(action: {
-                    applePayDemo()
+                    applePayDemo(price: 50.0, label: "Seller")
                 })
             }
         }
@@ -51,7 +51,7 @@ public extension iPaymentButton {
             VStack {
                 MediaApp()
                 iPaymentButton(type: .support, style: .whiteOutline, action: {
-                    applePayDemo()
+                    applePayDemo(price: 50.0, label: "Seller")
                 })
             }
         }
@@ -83,8 +83,8 @@ public extension iPaymentButton {
 
 
     @available(iOS 11.0, *)
-    public static func applePayDemo() {
-        ExampleApplePayPopup().pay()
+    public static func applePayDemo(price: Double, label: String) {
+        ExampleApplePayPopup(price: price, label: label).pay()
     }
 }
 
@@ -92,12 +92,17 @@ public typealias PaymentCompletionHandler = (Bool) -> Void
 
 @available(iOS 11.0, *)
 public class ExampleApplePayPopup: NSObject {
-    public override init() {}
+    public init(price: Double, label: String) {
+        self.price = price
+        self.label = label
+    }
     
     var paymentController: PKPaymentAuthorizationController?
     var paymentSummaryItems = [PKPaymentSummaryItem]()
     var paymentStatus = PKPaymentAuthorizationStatus.failure
     var completionHandler: PaymentCompletionHandler!
+    var price: Double
+    var label: String
     
     public static let supportedNetworks: [PKPaymentNetwork] = [
         .amex,
@@ -117,11 +122,8 @@ public class ExampleApplePayPopup: NSObject {
     public func pay() {
         completionHandler = demoCompletion
         
-        let subtotal = PKPaymentSummaryItem(label: "Subtotal", amount: 87.24, type: .final)
-        let serviceFee = PKPaymentSummaryItem(label: "Service Fee", amount: 4.02, type: .final)
-        let tax = PKPaymentSummaryItem(label: "Tax", amount: 8.04, type: .final)
-        let total = PKPaymentSummaryItem(label: "Demo Corp", amount: 99.30, type: .final)
-        paymentSummaryItems = [subtotal, serviceFee, tax, total]
+        let total = PKPaymentSummaryItem(label: self.label, amount: NSDecimalNumber(value: self.price), type: .final)
+        paymentSummaryItems = [total]
         
         // Create our payment request
         let paymentRequest = PKPaymentRequest()
